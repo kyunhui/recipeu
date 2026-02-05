@@ -17,3 +17,10 @@ __pycache__/
 frontend/
 
 nul
+# Python venv
+venv/
+.venv/
+backend/venv/
+__pycache__/
+*.pyc
+
