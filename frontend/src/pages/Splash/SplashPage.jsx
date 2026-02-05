@@ -13,7 +13,7 @@ export default function SplashPage() {
   const goPyuExperience = () => {
     // 퓨 사용자 정보를 localStorage에 저장
     const pyuUser = {
-      id: 999,  // 퓨의 고유 member_id (DB에 생성할 ID)
+      id: 1,  // 퓨의 고유 member_id (DB에 생성할 ID)
       nickname: "퓨",
       email: "pyu@recipeu.com",
       name: "퓨",
