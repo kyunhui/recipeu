@@ -13,10 +13,15 @@ export default function LoadingPage() {
   const API_URL = import.meta.env.VITE_API_URL || "http://211.188.62.72:8080";
 
   useEffect(() => {
+    let isActive = true;
+    const abortController = new AbortController();
+
     const generateRecipe = async () => {
       if (!sessionId) {
         alert("세션 정보가 없습니다.");
-        navigate("/chat");
+        if (isActive) {
+          navigate("/chat");
+        }
         return;
       }
 
@@ -30,6 +35,7 @@ export default function LoadingPage() {
             headers: {
               "Content-Type": "application/json",
             },
+            signal: abortController.signal,
           },
         );
 
@@ -47,21 +53,26 @@ export default function LoadingPage() {
         console.log("[LoadingPage] 이미지 URL:", imageUrl);
 
         // RecipeResultPage로 이동
-        navigate("/recipe-result", {
-          state: {
-            recipe: data.recipe,
-            userId: data.user_id,
-            title: data.title,
-            constraints: data.constraints,
-            sessionId: sessionId,
-            memberInfo: memberInfo,
-            chatHistory: chatHistory,
-            imageUrl: imageUrl,
-            remainingCount: isRegeneration ? 0 : 1,
-          },
-          replace: true,
-        });
+        if (isActive) {
+          navigate("/recipe-result", {
+            state: {
+              recipe: data.recipe,
+              userId: data.user_id,
+              title: data.title,
+              constraints: data.constraints,
+              sessionId: sessionId,
+              memberInfo: memberInfo,
+              chatHistory: chatHistory,
+              imageUrl: imageUrl,
+              remainingCount: isRegeneration ? 0 : 1,
+            },
+            replace: true,
+          });
+        }
       } catch (error) {
+        if (!isActive || error.name === "AbortError") {
+          return;
+        }
         console.error("[LoadingPage] 레시피 생성 실패:", error);
         alert("레시피 생성에 실패했습니다. 다시 시도해주세요.");
         navigate("/chat", { replace: true });
@@ -69,6 +80,10 @@ export default function LoadingPage() {
     };
 
     generateRecipe();
+    return () => {
+      isActive = false;
+      abortController.abort();
+    };
   }, [API_URL, sessionId, memberInfo, chatHistory, isRegeneration, navigate]);
 
   return (
