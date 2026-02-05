@@ -558,6 +558,24 @@ export default function CookModeAudioPage() {
     abortControllerRef.current = abortController;
 
     const currentStepText = recipeSteps[currentStepIndexRef.current]?.desc ?? "";
+    const recipeTitle = passedRecipe?.name || "";
+    const ingredientText = (passedRecipe?.ingredients || [])
+      .map((item) => `${item.name || ""} ${item.amount || ""}`.trim())
+      .filter(Boolean)
+      .join(", ");
+    const stepText = recipeSteps
+      .map((step, index) => {
+        const no = step.no || index + 1;
+        const desc = step.desc || step.description || "";
+        return `${no}. ${desc}`.trim();
+      })
+      .filter(Boolean)
+      .join(" / ");
+    const recipeContext = [
+      `제목: ${recipeTitle || "정보 없음"}`,
+      `재료: ${ingredientText || "정보 없음"}`,
+      `단계: ${stepText || "정보 없음"}`,
+    ].join("\n");
 
     // [요구사항 1 반영] 멀티턴 History 추출
     // - welcome 제외
@@ -581,6 +599,7 @@ export default function CookModeAudioPage() {
     formData.append("text", userText);
     formData.append("current_step", currentStepText);
     formData.append("current_cook", currentCook);
+    formData.append("recipe_context", recipeContext);
     formData.append("step_index", String(currentStepIndexRef.current));
     formData.append("total_steps", String(recipeSteps.length));
     formData.append("history", JSON.stringify(history));
