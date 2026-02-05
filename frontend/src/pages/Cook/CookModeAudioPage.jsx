@@ -258,6 +258,7 @@ export default function CookModeAudioPage() {
 
   // SSE fetch 중단용
   const abortControllerRef = useRef(null);
+  const isPageActiveRef = useRef(true);
 
   // 텍스트 버퍼
   const textBufferRef = useRef([]);
@@ -364,10 +365,16 @@ export default function CookModeAudioPage() {
 
   // 페이지 진입 시 자동으로 녹음 시작 + idle hint 타이머
   useEffect(() => {
+    isPageActiveRef.current = true;
     startListening();
     resetIdleHintTimer();
 
     return () => {
+      isPageActiveRef.current = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
       cleanupAllAudio();
       setMessages((prev) => {
         prev.forEach((m) => {
@@ -541,6 +548,7 @@ export default function CookModeAudioPage() {
 
   // ====== 백엔드 LLM+TTS SSE 호출 ======
   async function processTextWithBackend(userText) {
+    if (!isPageActiveRef.current) return;
     console.log("[processTextWithBackend] 호출됨, 텍스트:", userText);
     
     setPipelineBusy(true);
@@ -674,6 +682,7 @@ export default function CookModeAudioPage() {
                 break;
 
               case "tts_chunk":
+                if (!isPageActiveRef.current) break;
                 if (event.sample_rate) {
                   ttsStreamPlayer.setSampleRate(event.sample_rate);
                 }
@@ -690,6 +699,11 @@ export default function CookModeAudioPage() {
                   resetIdleHintTimer();
                 }
                 if (lastAction === "end_cooking") {
+                  isPageActiveRef.current = false;
+                  if (abortControllerRef.current) {
+                    abortControllerRef.current.abort();
+                    abortControllerRef.current = null;
+                  }
                   const delay = (lastDelaySeconds || 10) * 1000;
                   setTimeout(() => {
                     cleanupAllAudio();
@@ -703,6 +717,11 @@ export default function CookModeAudioPage() {
                     });
                   }, delay);
                 } else if (lastAction === "finish") {
+                  isPageActiveRef.current = false;
+                  if (abortControllerRef.current) {
+                    abortControllerRef.current.abort();
+                    abortControllerRef.current = null;
+                  }
                   const delay = (lastDelaySeconds || 10) * 1000;
                   setTimeout(() => {
                     setIsListening(false);
