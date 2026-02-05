@@ -54,6 +54,7 @@ async def process_text(
     text: str = Form(..., description="STT 완료된 최종 텍스트"),
     current_step: str = Form("", description="현재 조리 단계 설명"),
     current_cook: str = Form("", description="현재 요리 제목"),
+    recipe_context: str = Form("", description="전체 레시피 정보"),
     step_index: int = Form(0, description="현재 단계 인덱스 (0부터)"),
     total_steps: int = Form(1, description="총 단계 수"),
     history: str = Form("[]", description="대화 기록 JSON ([{role, content}, ...])"),
@@ -66,6 +67,7 @@ async def process_text(
         - text: 최종 사용자 텍스트
         - current_step: 현재 조리 단계 텍스트
         - current_cook: 현재 요리 제목
+        - recipe_context: 전체 레시피 정보
         - step_index: 현재 단계 인덱스
         - total_steps: 총 단계 수
         - history: 대화 기록 JSON 문자열
@@ -87,6 +89,7 @@ async def process_text(
             text,
             current_step,
             current_cook=current_cook,
+            recipe_context=recipe_context,
             step_index=step_index,
             total_steps=total_steps,
             history=history_list
@@ -109,6 +112,7 @@ async def process_voice(
     audio: UploadFile = File(..., description="VAD로 감지된 음성 파일"),
     current_step: str = Form("", description="현재 조리 단계 설명"),
     current_cook: str = Form("", description="현재 요리 제목"),
+    recipe_context: str = Form("", description="전체 레시피 정보"),
     step_index: int = Form(0, description="현재 단계 인덱스 (0부터)"),
     total_steps: int = Form(1, description="총 단계 수"),
 ):
@@ -119,6 +123,7 @@ async def process_voice(
         - audio: 음성 파일 (multipart/form-data)
         - current_step: 현재 조리 단계 텍스트
         - current_cook: 현재 요리 제목
+        - recipe_context: 전체 레시피 정보
         - step_index: 현재 단계 인덱스
         - total_steps: 총 단계 수
 
@@ -136,6 +141,7 @@ async def process_voice(
             audio_bytes,
             current_step,
             current_cook=current_cook,
+            recipe_context=recipe_context,
             step_index=step_index,
             total_steps=total_steps
         ):

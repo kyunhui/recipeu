@@ -126,6 +126,7 @@ async def classify_intent(
     user_text: str,
     current_step: str,
     current_cook: str = "",
+    recipe_context: str = "",
     history: List[Dict[str, str]] = None
 ) -> Dict[str, Any]:
     """
@@ -139,14 +140,13 @@ async def classify_intent(
         "text": user_text,
         "current_step": current_step,
         "current_cook": current_cook,
+        "recipe_context": recipe_context,
     }
     history_preview = f"{len(history)} turns" if history else "none"
     print(
-        "[LLM 요청] text='%s...', current_step='%s...', current_cook='%s', history=%s",
-        user_text[:80],
-        current_step[:80],
-        current_cook,
-        history_preview,
+        f"[LLM 요청] text='{user_text[:80]}...', current_step='{current_step[:80]}...', "
+        f"current_cook='{current_cook}', recipe_context='{recipe_context}', "
+        f"history={history_preview}"
     )
     if history:
         payload["history"] = history
@@ -369,6 +369,7 @@ async def process_text_pipeline(
     user_text: str,
     current_step: str,
     current_cook: str = "",
+    recipe_context: str = "",
     step_index: int = 0,
     total_steps: int = 1,
     history: List[Dict[str, str]] = None
@@ -383,6 +384,7 @@ async def process_text_pipeline(
             user_text,
             current_step,
             current_cook=current_cook,
+            recipe_context=recipe_context,
             history=history
         )
         intent = llm_result["intent"]
@@ -405,6 +407,7 @@ async def process_voice_pipeline(
     audio_bytes: bytes,
     current_step: str,
     current_cook: str = "",
+    recipe_context: str = "",
     step_index: int = 0,
     total_steps: int = 1
 ) -> AsyncGenerator[Dict[str, Any], None]:
@@ -433,6 +436,7 @@ async def process_voice_pipeline(
         user_text,
         current_step,
         current_cook=current_cook,
+        recipe_context=recipe_context,
         step_index=step_index,
         total_steps=total_steps
     ):
