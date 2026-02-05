@@ -16,6 +16,10 @@ export default function CookModePage() {
   const [currentStepIndex, setCurrentStepIndex] = useState(passedStepIndex);
   const [elapsedTime, setElapsedTime] = useState(passedElapsedTime);
 
+  // 음성 세션 정보
+  const voiceSessionId = location.state?.voiceSessionId ?? null;
+  const memberId = location.state?.memberId ?? 2;
+
   // RecipeResultPage 또는 CookModeAudioPage에서 전달받은 recipe 데이터
   const recipe = location.state?.recipe || {
     name: "레시피 없음",
@@ -28,6 +32,29 @@ export default function CookModePage() {
   };
 
   const recipeSteps = recipe.steps || [];
+
+  const pyuImages = [
+    "/pyu_banjuk.png",
+    "/pyu_chicken.png",
+    "/pyu_cook.png",
+    "/pyu_gimbab.png",
+    "/pyu_hurai.png",
+    "/pyu_icecream.png",
+    "/pyu_lamen.png",
+    "/pyu_pizza.png",
+    "/pyu_salad.png",
+    "/pyu_wink.png",
+  ];
+  const getRandomPyuImage = (exclude) => {
+    if (pyuImages.length === 0) return "/default-food.jpg";
+    if (pyuImages.length === 1) return pyuImages[0];
+    let next = pyuImages[Math.floor(Math.random() * pyuImages.length)];
+    while (next === exclude) {
+      next = pyuImages[Math.floor(Math.random() * pyuImages.length)];
+    }
+    return next;
+  };
+  const [randomPyuImage, setRandomPyuImage] = useState(() => getRandomPyuImage());
 
   // 타이머
   useEffect(() => {
@@ -57,6 +84,7 @@ export default function CookModePage() {
 
     setIsAnimating(true);
     setSlideDir(direction === "next" ? "slide-left" : "slide-right");
+    setRandomPyuImage((prev) => getRandomPyuImage(prev));
 
     setTimeout(() => {
       setCurrentStepIndex(next);
@@ -79,6 +107,8 @@ export default function CookModePage() {
         recipeSteps,
         recipe,
         elapsedTime,
+        voiceSessionId,
+        memberId,
       },
     });
   };
@@ -107,6 +137,7 @@ export default function CookModePage() {
         const dir = index > currentStepIndex ? "next" : "prev";
         setIsAnimating(true);
         setSlideDir(dir === "next" ? "slide-left" : "slide-right");
+        setRandomPyuImage((prev) => getRandomPyuImage(prev));
         setTimeout(() => {
           setCurrentStepIndex(index);
           setSlideDir(dir === "next" ? "enter-from-right" : "enter-from-left");
@@ -114,19 +145,13 @@ export default function CookModePage() {
         }, 250);
       }}
     >
-      {/* 레시피 제목 (한 줄) */}
-      <h1 className="cook-recipe-title">{recipe.name}</h1>
-
-      {/* 소요시간 + 녹음 버튼 (한 줄, 6:4) */}
-      <div className="cook-time-record-row">
-        <div className="cook-time-section">
-          <span className="cook-time-text">소요시간 {formatTime(elapsedTime)}</span>
-          <img
-            src="/stopwatch.png"
-            alt="스톱워치"
-            className="cook-stopwatch-icon"
-            onError={(e) => (e.target.style.display = "none")}
-          />
+      {/* 제목 + 소요시간 (왼쪽 6) | 녹음 버튼 (오른쪽 4) */}
+      <div className="cook-header-row">
+        <div className="cook-header-info">
+          <h1 className="cook-recipe-title">{recipe.name}</h1>
+          <div className="cook-time-section">
+            <span className="cook-time-text">소요시간 {formatTime(elapsedTime)}</span>
+          </div>
         </div>
 
         <div className="cook-record-section">
@@ -160,7 +185,7 @@ export default function CookModePage() {
         </button>
         <div className="cook-food-image-wrapper">
           <img
-            src={recipeSteps[currentStepIndex]?.image || recipe.image || "/default-food.jpg"}
+            src={randomPyuImage}
             alt="조리 이미지"
             className="cook-food-image"
             onError={(e) => {
