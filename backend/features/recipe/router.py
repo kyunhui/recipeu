@@ -154,8 +154,10 @@ async def generate_recipe_from_chat(
 
     try:
         # 레시피 생성 (RAG + LLM + MongoDB 이미지)
+        last_agent_msg = [m for m in messages if m.get("role") in ("assistant", "AGENT")]
+        chat_for_recipe = last_agent_msg[-1:] if last_agent_msg else messages[-1:]
         recipe_json = await service.generate_recipe(
-            chat_history=messages,
+            chat_history=chat_for_recipe,
             member_info=user_constraints
         )
 
